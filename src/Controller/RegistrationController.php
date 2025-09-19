@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Constraints\Json;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 final class RegistrationController extends AbstractController
 {
@@ -21,7 +22,8 @@ final class RegistrationController extends AbstractController
         #[MapRequestPayload] RegistrationDto $registrationDto,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
-        SerializerInterface $serializer
+        SerializerInterface $serializer,
+        ValidatorInterface $validator
     ): Response
     {
         $user = new User();
@@ -34,6 +36,19 @@ final class RegistrationController extends AbstractController
         $user->setEmail($registrationDto->email);
         $user->setRoles(['ROLE_USER']);
         $user->setName($registrationDto->name);
+
+
+        $errors = $validator->validate($user);
+
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            return new JsonResponse([
+                'message' => $errorMessages,
+            ], 422);
+        }
 
         $entityManager->persist($user);
         $entityManager->flush();
