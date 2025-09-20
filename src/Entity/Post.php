@@ -26,7 +26,7 @@ class Post
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    private ?string $test = null;
+    private ?string $text = null;
 
     #[ORM\ManyToOne(inversedBy: 'posts')]
     #[ORM\JoinColumn(nullable: false)]
